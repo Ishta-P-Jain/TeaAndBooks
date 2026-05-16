@@ -298,6 +298,41 @@ const googleLogin = async (req, res) => {
   }
 };
 
+/* ================= RESEND VERIFICATION ================= */
+
+const resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "No account found with that email." });
+
+    if (user.isVerified)
+      return res.status(400).json({ message: "This account is already verified." });
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpire = Date.now() + 24 * 60 * 60 * 1000;
+    await user.save();
+
+    const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}`;
+
+    await sendEmail({
+      email: user.email,
+      subject: "Verify your email",
+      html: `<a href="${verificationUrl}">${verificationUrl}</a>`
+    });
+
+    res.json({ message: "Verification email resent successfully." });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 /* ================= VERIFY TOKEN ================= */
 // Used by frontend to validate stored access token and fetch current user
 const verifyToken = async (req, res) => {
@@ -326,6 +361,7 @@ module.exports = {
   signup,
   login,
   verifyEmail,
+  resendVerification,
   forgotPassword,
   resetPassword,
   refreshTokenHandler,

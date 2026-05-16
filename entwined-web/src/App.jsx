@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Auth from "./pages/Auth";
+import VerifyEmail from "./pages/VerifyEmail";
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -28,6 +31,17 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+       <Router>
+      <Routes>
+        <Route path="/" element={<Auth />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+
+        {/* Add your other existing routes back below */}
+        {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+        {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
+        {/* <Route path="/reset-password/:token" element={<ResetPassword />} /> */}
+      </Routes>
+    </Router>
     </>
   )
 }
